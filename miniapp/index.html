@@ -87,7 +87,7 @@ header.top p{margin:0;color:var(--muted);max-width:60ch}
 .chip{flex:none;border:1px solid var(--a-line);background:transparent;color:var(--a-fg);border-radius:999px;padding:7px 12px;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px}
 .chip .dd{width:8px;height:8px;border-radius:50%}
 .chip.on{background:var(--a-fg);color:var(--a-bg);border-color:var(--a-fg)}
-.seg{display:grid;grid-template-columns:repeat(3,1fr);background:var(--a-chip);border-radius:calc(var(--r)*.7);padding:3px;margin-bottom:12px}
+.seg{display:grid;grid-template-columns:repeat(4,1fr);background:var(--a-chip);border-radius:calc(var(--r)*.7);padding:3px;margin-bottom:12px}
 .seg button{border:0;background:transparent;font:inherit;font-size:12.5px;font-weight:600;color:var(--a-muted);padding:7px 0;border-radius:calc(var(--r)*.6);cursor:pointer}
 .seg button.on{background:var(--a-card);color:var(--a-fg);box-shadow:var(--a-shadow)}
 .task{display:flex;gap:12px;padding:13px 14px;margin-bottom:8px;cursor:pointer;align-items:flex-start;text-align:left;width:100%;font:inherit;color:inherit}
@@ -115,6 +115,30 @@ header.top p{margin:0;color:var(--muted);max-width:60ch}
 .bars .cols{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;align-items:end;height:120px;margin-top:10px}
 .bars .col{background:var(--a-chip);border-radius:calc(var(--r)*.45);position:relative}
 .bars .col.on{background:var(--a-accent)}
+button.col{border:0;padding:0;cursor:pointer;width:100%;align-self:end}
+button.stat{font:inherit;text-align:left;cursor:pointer;width:100%;color:var(--a-fg)}
+button.stat.hot{color:var(--a-on-accent)}
+.sheet{max-height:88%;overflow-y:auto}
+.sheet .chips{margin:0 -18px 12px;padding:0 18px}
+.inp{width:100%;font:inherit;font-size:16px;padding:12px 14px;border-radius:calc(var(--r)*.8);border:1px solid var(--a-line);background:var(--a-card);color:var(--a-fg);margin:0 0 14px;outline:none}
+.inp:focus{border-color:var(--a-accent)}
+.inp.err{border-color:var(--a-danger)}
+.lbl2{font-size:12px;color:var(--a-muted);margin:0 2px 6px;font-weight:600}
+.hint2{font-size:12px;color:var(--a-muted);margin:2px 2px 14px}
+.tg2{width:46px;height:28px;border-radius:14px;border:0;background:var(--a-line);position:relative;cursor:pointer;flex:none;padding:0;transition:background .2s}
+.tg2::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.tg2.on{background:var(--a-accent)}
+.tg2.on::after{transform:translateX(18px)}
+.rows2{padding:2px 14px;margin-bottom:16px}
+.srow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid var(--a-line)}
+.srow:last-child{border-bottom:0}
+.srow b{font-weight:600;display:block}
+.srow small{display:block;color:var(--a-muted);font-size:12px;margin-top:1px}
+.srow .who{display:flex;align-items:center;gap:10px}
+.srow .who .av{width:32px;height:32px;margin:0;font-size:13px}
+.srow .val{color:var(--a-muted)}
+.backb{border:0;background:transparent;color:var(--a-muted);font:inherit;font-weight:600;padding:4px 0;cursor:pointer}
+
 .bars .lbl{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;text-align:center;font-size:11px;color:var(--a-muted);margin-top:6px}
 .note{font-size:11px;color:var(--a-muted);text-align:center;margin-top:10px}
 .tabbar{position:absolute;left:12px;right:12px;bottom:12px;display:grid;grid-template-columns:1fr 1fr 64px 1fr 1fr;justify-items:center;align-items:center;justify-content:space-around;
@@ -187,7 +211,7 @@ body{padding:0;font-family:"Manrope",system-ui,sans-serif;-webkit-tap-highlight-
 <div class="app" id="app" data-mode="light">
   <div class="tg">
     <button class="ttl" id="projbtn" aria-label="Сменить проект"><span id="projname"></span></button>
-    <button class="pill" id="more" aria-label="Меню" style="border:0;font:inherit;font-weight:600;cursor:pointer">···</button>
+    <button class="pill" id="more" aria-label="Настройки" style="border:0;font:inherit;cursor:pointer;width:36px;height:36px;padding:0;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
   </div>
   <div class="scr" id="scr"></div>
   <nav class="tabbar">
@@ -220,12 +244,16 @@ const tasks=[
  {id:5,pr:'piano',t:'Обновить расписание преподавателей',d:'edu',a:'A',day:14,p:1,s:'work',desc:'Учесть переносы на декабрь.'},
  {id:6,pr:'piano',t:'Снять рилс с учениками на репетиции',d:'mk',a:'A',day:15,p:2,s:'work',desc:'Короткий ролик 20–30 сек, согласие родителей есть.'},
  {id:7,pr:'piano',t:'Отчёт по выручке за октябрь',d:'fin',a:'E',day:5,p:2,s:'done',desc:'Готово, лежит в таблице.'},
+ {id:12,pr:'piano',t:'Напомнить родителям об оплате',d:'fin',a:'A',day:6,p:2,s:'done',desc:'Рассылка ушла в родительский чат.'},
+ {id:13,pr:'piano',t:'Согласовать зал для концерта',d:'edu',a:'G',day:4,p:3,s:'done',desc:'Зал забронирован на 22 ноября.'},
+ {id:14,pr:'piano',t:'Выложить сторис про пробный урок',d:'mk',a:'O',day:3,p:1,s:'done',desc:'Опубликовано.'},
  {id:8,pr:'piano',t:'Разместить афишу концерта в соцсетях',d:'mk',a:'O',day:18,p:1,s:'work',desc:'Афиша от дизайнера, публикация в Telegram и Instagram.'},
  {id:9,pr:'vd',t:'Обновить прайс на занятия вокалом',d:'sales',a:'A',day:13,p:2,s:'work',desc:'Новые цены с декабря, согласовать с Егором.'},
  {id:10,pr:'vd',t:'Записать видеоотзыв ученицы',d:'mk',a:'O',day:11,p:2,s:'work',desc:'Договориться о времени, снять после урока.'},
  {id:11,pr:'vd',t:'Собрать заявки на пробные уроки',d:'sales',a:'O',day:7,p:3,s:'work',desc:'Заявки из директа за неделю.'}
 ];
-const st={tab:'home',dept:'all',filter:'all',proj:'piano',me:'A',calDay:TODAY,calF:'all'};
+const st={tab:'home',dept:'all',filter:'all',proj:'piano',me:'A',calDay:TODAY,calF:'all',finM:5};
+let nt={};
 const app=document.getElementById('app'),scr=document.getElementById('scr'),sheet=document.getElementById('sheet');
 const isAdmin=()=>['Владелец','Админ'].includes(projects[st.proj].roles[st.me]);
 const isLate=x=>x.s!=='done'&&x.day<TODAY;
@@ -245,9 +273,9 @@ function home(){
   const focus=isAdmin()?open:mine;
   return `<div class="hello"><small>Понедельник, 9 ноября</small><h2 class="head">Привет, ${team[st.me].n}!<br>Сегодня у тебя <em>${today.length} ${plural(today.length)}</em></h2></div>
   <div class="week">${wd.map((d,i)=>`<button class="day ${i===0?'on':''}" data-goday="${TODAY+i}">${d}<b>${TODAY+i}</b>${myDays.has(TODAY+i)?'<div class="dot"></div>':''}</button>`).join('')}</div>
-  <div class="stats"><div class="card stat hot"><b>${(isAdmin()?open:mine).length}</b><span>${isAdmin()?'в работе':'мои в работе'}</span></div>
-  <div class="card stat"><b style="color:var(--a-danger)">${focus.filter(isLate).length}</b><span>просрочено</span></div>
-  <div class="card stat"><b>${isAdmin()?9:3}</b><span>готово за неделю</span></div></div>
+  <div class="stats"><button class="card stat hot" data-stat="work"><b>${(isAdmin()?open:mine).length}</b><span>${isAdmin()?'в работе':'мои в работе'}</span></button>
+  <button class="card stat" data-stat="late"><b style="color:var(--a-danger)">${focus.filter(isLate).length}</b><span>просрочено</span></button>
+  <button class="card stat" data-stat="done"><b>${ptasks().filter(x=>x.s==='done'&&(isAdmin()||x.a===st.me)).length}</b><span>готово за неделю</span></button></div>
   <div class="sec"><h3>Проекты</h3></div>
   ${Object.entries(projects).filter(([k,p])=>p.team.includes(st.me)).map(([k,p])=>{
     const all=tasks.filter(x=>x.pr===k),pc=Math.round((all.filter(x=>x.s==='done').length+ (k==='piano'?7:3))/(all.length+(k==='piano'?7:3))*100);
@@ -258,12 +286,14 @@ function home(){
 }
 function tasksScr(){
   let l=ptasks().filter(x=>st.dept==='all'||x.d===st.dept);
+  if(st.filter==='done')l=l.filter(x=>x.s==='done'&&(isAdmin()||x.a===st.me));
+  else{l=l.filter(x=>x.s!=='done');
   if(st.filter==='mine')l=l.filter(x=>x.a===st.me);
-  if(st.filter==='late')l=l.filter(isLate);
+  if(st.filter==='late')l=l.filter(isLate);}
   const used=[...new Set(ptasks().map(x=>x.d))];
   return `<div class="hello"><h2 class="head">Задачи</h2><small>${projects[st.proj].n}</small></div>
   <div class="chips">${[['all','Все отделы']].concat(used.map(k=>[k,depts[k]])).map(([k,n])=>`<button class="chip ${st.dept===k?'on':''}" data-dept="${k}">${k!=='all'?`<span class="dd" style="background:var(--d-${k})"></span>`:''}${n}</button>`).join('')}</div>
-  <div class="seg">${[['all','Все'],['mine','Мои'],['late','Просрочено']].map(([k,n])=>`<button class="${st.filter===k?'on':''}" data-f="${k}">${n}</button>`).join('')}</div>
+  <div class="seg">${[['all','Все'],['mine','Мои'],['late','Просрочено'],['done','Готово']].map(([k,n])=>`<button class="${st.filter===k?'on':''}" data-f="${k}">${n}</button>`).join('')}</div>
   ${l.length?l.map(taskCard).join(''):'<p class="note">Тут пусто. Можно выдохнуть</p>'}`;
 }
 function cal(){
@@ -282,14 +312,17 @@ function cal(){
   ${sel.length?sel.map(taskCard).join(''):'<p class="note">На этот день дедлайнов нет</p>'}`;
 }
 function fin(){
-  const f=projects[st.proj].fin,m=['июн','июл','авг','сен','окт','ноя'],mx=Math.max(...f.bars);
-  return `<div class="hello"><h2 class="head">Финансы</h2><small>${projects[st.proj].n} · ноябрь</small></div>
-  <div class="card fin-top"><small>Прибыль за месяц</small><b>${f.profit} ₽</b><span class="badge">${f.delta} к октябрю</span></div>
-  <div class="fin-row"><div class="card"><small>Выручка</small><b>${f.rev} ₽</b></div><div class="card"><small>Расходы</small><b>${f.exp} ₽</b></div></div>
+  const f=projects[st.proj].fin,m=['июн','июл','авг','сен','окт','ноя'],full=['июнь','июль','август','сентябрь','октябрь','ноябрь'],mx=Math.max(...f.bars);
+  const ratio=st.proj==='piano'?0.643:0.594,i=st.finM,fmt=n=>n.toLocaleString('ru-RU');
+  const rev=f.bars[i]*1000,exp=Math.round(rev*ratio/100)*100,prof=rev-exp;
+  const pp=i>0?f.bars[i-1]*1000-Math.round(f.bars[i-1]*1000*ratio/100)*100:0,dl=i>0?Math.round((prof-pp)/pp*100):null;
+  return `<div class="hello"><h2 class="head">Финансы</h2><small>${projects[st.proj].n} · ${full[i]}</small></div>
+  <div class="card fin-top"><small>Прибыль за ${full[i]}</small><b>${fmt(prof)} ₽</b>${dl===null?'':`<span class="badge" style="${dl<0?'color:var(--a-danger);background:color-mix(in srgb,var(--a-danger) 15%,transparent)':''}">${dl>0?'+':''}${dl}% к прошлому месяцу</span>`}</div>
+  <div class="fin-row"><div class="card"><small>Выручка</small><b>${fmt(rev)} ₽</b></div><div class="card"><small>Расходы</small><b>${fmt(exp)} ₽</b></div></div>
   <div class="card bars"><b class="head">Выручка по месяцам, тыс ₽</b>
-  <div class="cols">${f.bars.map((x,i)=>`<div class="col ${i===5?'on':''}" style="height:${Math.round(x/mx*100)}%" title="${x} тыс ₽"></div>`).join('')}</div>
+  <div class="cols">${f.bars.map((x,j)=>`<button class="col ${j===i?'on':''}" data-m="${j}" style="height:${Math.round(x/mx*100)}%" aria-label="${full[j]}: ${x} тыс ₽"></button>`).join('')}</div>
   <div class="lbl">${m.map(x=>`<span>${x}</span>`).join('')}</div></div>
-  <p class="note">Цифры примерные. Эту вкладку видят только владелец и админы</p>`;
+  <p class="note">Нажми на месяц, чтобы посмотреть его цифры. Цифры примерные, вкладку видят только владелец и админы</p>`;
 }
 function teamScr(){
   const p=projects[st.proj];
@@ -326,7 +359,7 @@ function openProjects(){
 }
 function setProj(k){st.proj=k;st.dept='all';closeSheet();render()}
 sheet.addEventListener('click',e=>{const p=e.target.closest('[data-pick]');if(p)setProj(p.dataset.pick);
-  const m=e.target.closest('[data-menu]');if(m){closeSheet();if(m.dataset.menu==='team'){st.tab='team';scr.scrollTop=0;render()}if(m.dataset.menu==='role'){st.me=st.me==='A'?'O':'A';st.tab='home';render()}}});
+  const m=e.target.closest('[data-menu]');if(m){closeSheet();if(m.dataset.menu==='team'){st.tab='team';scr.scrollTop=0;render()}if(m.dataset.menu==='bell')openNotif();if(m.dataset.menu==='gear')openSettings();if(m.dataset.menu==='role'){st.me=st.me==='A'?'O':'A';st.tab='home';render()}}});
 const ico={role:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 7h13l-3-3M17 17H4l3 3"/></svg>',team:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.5-5.5 6.5-5.5s5.7 2 6.5 5.5"/><circle cx="17.5" cy="9" r="2.5"/></svg>',
  bell:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 21h4"/></svg>',
  gear:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>'};
@@ -334,7 +367,7 @@ document.getElementById('more').onclick=()=>{
   const items=[];
   if(isAdmin())items.push(['team','Команда',projects[st.proj].team.length+' человека, роли и приглашения']);
   if(isAdmin())items.push(['bell','Уведомления','Кому писать, когда задача выполнена']);
-  items.push(['gear','Настройки','Язык, тема, мои уведомления']);
+  items.push(['gear','Настройки','Тема, мои уведомления, вибрация']);
   items.push(['role',st.me==='A'?'Посмотреть как участник':'Вернуться к виду админа','Тестовый переключатель, в Core его не будет']);
   openSheet(`<h2 class="head">${projects[st.proj].n}</h2><div class="plist">${items.map(([k,n,d])=>`<button class="card mitem" data-menu="${k}"><span class="ic">${ico[k]}</span><span><b>${n}</b><small>${d}</small></span></button>`).join('')}</div>`)};
 document.getElementById('projbtn').onclick=openProjects;
@@ -345,20 +378,85 @@ scr.addEventListener('click',e=>{
   const dd=e.target.closest('[data-day]');if(dd){st.calDay=+dd.dataset.day;render();return}
   const gd=e.target.closest('[data-goday]');if(gd){st.calDay=+gd.dataset.goday;st.tab='cal';scr.scrollTop=0;render();return}
   const cf=e.target.closest('[data-cf]');if(cf){st.calF=cf.dataset.cf;render();return}
+  const sb=e.target.closest('[data-stat]');if(sb){const k=sb.dataset.stat;st.tab='tasks';st.dept='all';st.filter=k==='work'?(isAdmin()?'all':'mine'):k;scr.scrollTop=0;render();return}
+  const mb=e.target.closest('[data-m]');if(mb){st.finM=+mb.dataset.m;render();return}
   const f=e.target.closest('[data-f]');if(f){st.filter=f.dataset.f;render()}
 });
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{st.tab=b.dataset.tab;scr.scrollTop=0;render()});
 document.getElementById('sheetbg').onclick=closeSheet;
-document.getElementById('fab').onclick=()=>{st.tab='tasks';render()};
+function openNew(){
+  const p=projects[st.proj],ds=[...new Set(ptasks().map(x=>x.d))];
+  nt={d:ds[0],a:st.me,day:TODAY+1,p:2};
+  const days=[['сегодня',TODAY],['завтра',TODAY+1],['пятница',13],['через неделю',TODAY+7]];
+  openSheet(`<h2 class="head">Новая задача</h2>
+  <input id="nt-t" class="inp" placeholder="Что нужно сделать?" autocomplete="off">
+  <div class="lbl2">Отдел</div><div class="chips">${ds.map(k=>`<button class="chip ${k===nt.d?'on':''}" data-ntk="d" data-ntv="${k}"><span class="dd" style="background:var(--d-${k})"></span>${depts[k]}</button>`).join('')}</div>
+  <div class="lbl2">Исполнитель</div><div class="chips">${p.team.map(k=>`<button class="chip ${k===nt.a?'on':''}" data-ntk="a" data-ntv="${k}">${team[k].n}${k===st.me?' (я)':''}</button>`).join('')}</div>
+  <div class="lbl2">Срок</div><div class="chips">${days.map(([n,d])=>`<button class="chip ${d===nt.day?'on':''}" data-ntk="day" data-ntv="${d}">${n}</button>`).join('')}</div>
+  <div class="lbl2">Приоритет</div><div class="seg" style="grid-template-columns:repeat(3,1fr)">${[[1,'низкий'],[2,'средний'],[3,'высокий']].map(([v,n])=>`<button class="${v===nt.p?'on':''}" data-ntk="p" data-ntv="${v}">${n}</button>`).join('')}</div>
+  <p class="hint2">Можно и как сейчас: отправить боту текст или голосовое, он сам разберёт задачу.</p>
+  <button class="btn pri" id="nt-ok" style="width:100%">Создать задачу</button>`);
+  document.getElementById('nt-t').oninput=e=>e.target.classList.remove('err');
+  document.getElementById('nt-ok').onclick=()=>{const i=document.getElementById('nt-t'),t=i.value.trim();
+    if(!t){i.classList.add('err');i.placeholder='Напиши, что нужно сделать';i.focus();return}
+    tasks.unshift({id:Date.now(),pr:st.proj,t,d:nt.d,a:nt.a,day:nt.day,p:nt.p,s:'work',desc:'Создано в мини-приложении.'});
+    closeSheet();st.tab='tasks';st.dept='all';st.filter='all';scr.scrollTop=0;render()};
+}
+sheet.addEventListener('click',e=>{const b=e.target.closest('[data-ntk]');if(!b)return;const k=b.dataset.ntk;
+  nt[k]=['day','p'].includes(k)?+b.dataset.ntv:b.dataset.ntv;
+  b.parentElement.querySelectorAll('[data-ntk]').forEach(x=>x.classList.toggle('on',x===b))});
+document.getElementById('fab').onclick=openNew;
+const ns={watch:{E:true,A:true,O:false,G:false},r1:true,r0:true,rl:true,weekly:true,mNew:true,mRem:true,mMen:false,haptic:true};
+const tog=(k,on)=>`<button class="tg2 ${on?'on':''}" data-tog="${k}" role="switch" aria-checked="${on}" aria-label="Переключить"></button>`;
+const backBtn='<button class="backb" data-back="1">‹ Меню</button>';
+function openNotif(){
+  const p=projects[st.proj];
+  openSheet(`${backBtn}<h2 class="head">Уведомления</h2>
+  <div class="lbl2">Когда задача выполнена, писать</div>
+  <div class="card rows2">${p.team.map(k=>`<div class="srow"><span class="who">${av(k)}<span><b>${team[k].n}${k===st.me?' (я)':''}</b><small>${p.roles[k]}</small></span></span>${tog('watch.'+k,ns.watch[k])}</div>`).join('')}</div>
+  <div class="lbl2">Напоминания исполнителям</div>
+  <div class="card rows2">
+   <div class="srow"><span><b>За день до дедлайна</b><small>Вечером, в 19:00</small></span>${tog('r1',ns.r1)}</div>
+   <div class="srow"><span><b>В день дедлайна</b><small>Утром, в 10:00</small></span>${tog('r0',ns.r0)}</div>
+   <div class="srow"><span><b>О просрочке</b><small>Исполнителю и админам</small></span>${tog('rl',ns.rl)}</div></div>
+  <div class="lbl2">Отчёты</div>
+  <div class="card rows2"><div class="srow"><span><b>Еженедельный отчёт</b><small>По понедельникам в 10:00, в чат проекта</small></span>${tog('weekly',ns.weekly)}</div></div>`);
+}
+function openSettings(){
+  const th=window.__getTheme?window.__getTheme():'auto';
+  openSheet(`${backBtn}<h2 class="head">Настройки</h2>
+  <div class="lbl2">Тема</div>
+  <div class="seg" style="grid-template-columns:repeat(3,1fr)">${[['auto','Как в Telegram'],['light','Светлая'],['dark','Тёмная']].map(([k,n])=>`<button class="${k===th?'on':''}" data-thset="${k}">${n}</button>`).join('')}</div>
+  <div class="lbl2">Мне присылать</div>
+  <div class="card rows2">
+   <div class="srow"><span><b>Новые задачи на меня</b></span>${tog('mNew',ns.mNew)}</div>
+   <div class="srow"><span><b>Напоминания о моих дедлайнах</b></span>${tog('mRem',ns.mRem)}</div>
+   <div class="srow"><span><b>Упоминания в задачах</b></span>${tog('mMen',ns.mMen)}</div></div>
+  <div class="lbl2">Приложение</div>
+  <div class="card rows2">
+   <div class="srow"><span><b>Вибрация при нажатиях</b></span>${tog('haptic',ns.haptic)}</div>
+   <div class="srow"><span><b>Язык</b></span><span class="val">Русский ›</span></div></div>
+  <p class="note">Core · тестовая версия</p>`);
+}
+sheet.addEventListener('click',e=>{
+  const t=e.target.closest('[data-tog]');
+  if(t){const k=t.dataset.tog,ps=k.split('.'),last=ps.pop(),o=ps.reduce((a,p)=>a[p],ns);o[last]=!o[last];
+    t.classList.toggle('on',o[last]);t.setAttribute('aria-checked',o[last]);if(k==='haptic')window.__hapticOff=!o[last];return}
+  const th=e.target.closest('[data-thset]');
+  if(th){window.__setTheme&&window.__setTheme(th.dataset.thset);th.parentElement.querySelectorAll('[data-thset]').forEach(x=>x.classList.toggle('on',x===th));return}
+  if(e.target.closest('[data-back]'))document.getElementById('more').click();
+});
 
 /* ---- Telegram ---- */
 const tg=window.Telegram&&window.Telegram.WebApp;
 const tgName=tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user&&tg.initDataUnsafe.user.first_name;
-if(tgName)team.A.n=tgName;
-function haptic(){try{tg&&tg.HapticFeedback&&tg.HapticFeedback.impactOccurred('light')}catch(e){}}
+if(tgName)team.A.n=tgName.trim().split(/\s+/)[0];
+function haptic(){if(window.__hapticOff)return;try{tg&&tg.HapticFeedback&&tg.HapticFeedback.impactOccurred('light')}catch(e){}}
 document.addEventListener('click',e=>{if(e.target.closest('button'))haptic()});
+let forcedTheme='auto';window.__setTheme=m=>{forcedTheme=m;applyTheme()};window.__getTheme=()=>forcedTheme;
 function applyTheme(){
-  const dark=tg?tg.colorScheme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;
+  const sys=tg?tg.colorScheme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;
+  const dark=forcedTheme==='dark'||(forcedTheme!=='light'&&sys);
   app.dataset.mode=dark?'dark':'light';
   const bg=dark?'#1B2632':'#EEE9DF';
   try{tg.setHeaderColor(bg);tg.setBackgroundColor(bg);tg.setBottomBarColor&&tg.setBottomBarColor(bg)}catch(e){}

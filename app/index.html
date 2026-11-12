@@ -1,0 +1,660 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Core</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
+<style>
+
+/* Layout: phone preview on the left, settings panel on the right; stacks on phones */
+:root{
+  --bg:#F3EFE8; --panel:#FFFFFF; --fg:#1B2632; --muted:#6B675E; --line:#E2DCD0; --ui-accent:#A35139;
+  --font-ui:"Manrope",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11171E; --panel:#19212B; --fg:#E9E4DA; --muted:#9AA3AD; --line:#2A3542; --ui-accent:#FFB162; color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#11171E; --panel:#19212B; --fg:#E9E4DA; --muted:#9AA3AD; --line:#2A3542; --ui-accent:#FFB162; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-ui);font-size:14px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 40px}
+.wrap{max-width:1040px;margin:0 auto;display:grid;grid-template-columns:auto minmax(0,1fr);gap:40px;align-items:start}
+@media (max-width:860px){.wrap{grid-template-columns:minmax(0,1fr);justify-items:center}}
+header.top{max-width:1040px;margin:0 auto 24px}
+header.top h1{font-size:22px;margin:0 0 4px;font-weight:800;letter-spacing:-.01em}
+header.top p{margin:0;color:var(--muted);max-width:60ch}
+
+/* ---------- PHONE / APP ---------- */
+.phone{width:380px;max-width:100%;height:790px;border-radius:44px;padding:10px;background:#0D1117;box-shadow:0 30px 60px -30px rgba(0,0,0,.45)}
+.app{
+  --a-accent:#FFB162; --a-on-accent:#1B2632; --r:18px; --f-body:"Manrope"; --f-head:"Manrope";
+  --a-bg:#EEE9DF; --a-card:#FBF8F2; --a-fg:#1B2632; --a-muted:#6E6A60; --a-line:#DDD5C6; --a-chip:#E5DED1;
+  --a-danger:#8C2F39; --a-ok:#5E6E45; --a-shadow:0 1px 2px rgba(27,38,50,.05),0 8px 20px -12px rgba(27,38,50,.18);
+  --d-mk:#E89A4F; --d-edu:#8E9E73; --d-sales:#B8964A; --d-fin:#2F3E51;
+  position:relative;height:100%;border-radius:34px;overflow:hidden;background:var(--a-bg);color:var(--a-fg);
+  font-family:var(--f-body),system-ui,sans-serif;font-size:14px;transition:background .25s,color .25s}
+.app[data-mode="dark"]{
+  --a-bg:#1B2632; --a-card:#2C3B4D; --a-fg:#EEE9DF; --a-muted:#A6AFB9; --a-line:#3A4A5E; --a-chip:#24313F;
+  --a-danger:#F2A0A8; --a-ok:#B5C29C; --a-shadow:0 10px 24px -14px rgba(0,0,0,.6);
+  --d-mk:#FFB162; --d-edu:#A3B18A; --d-sales:#C6A75E; --d-fin:#8FA3BC}
+.app.noshadow{--a-shadow:none}
+.app.lower .scr{text-transform:lowercase}
+.app h2,.app h3,.app .head{font-family:var(--f-head),var(--f-body),system-ui,sans-serif}
+.tg{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 8px;font-size:13px}
+.tg .pill{background:var(--a-chip);border-radius:999px;padding:5px 12px;color:var(--a-fg);font-weight:600}
+.tg .ttl{text-align:center;line-height:1.15;border:0;background:transparent;color:inherit;font:inherit;cursor:pointer;padding:2px 8px;border-radius:10px}
+.tg .ttl:focus-visible{outline:2px solid var(--a-accent)}
+.tg .ttl b{display:block;font-size:15px}
+.tg .ttl span{font-size:15px;color:var(--a-fg)}
+.scr{position:absolute;inset:58px 0 0;overflow-y:auto;padding:6px 16px 110px;scrollbar-width:none}
+.scr::-webkit-scrollbar{display:none}
+.card{background:var(--a-card);border-radius:var(--r);box-shadow:var(--a-shadow);border:1px solid color-mix(in srgb,var(--a-line) 55%,transparent)}
+.hello{margin:6px 0 14px}
+.hello small{color:var(--a-muted);font-size:13px}
+.hello h2{margin:2px 0 0;font-size:26px;line-height:1.15;letter-spacing:-.01em;font-weight:700;text-wrap:balance}
+.hello h2 em{font-style:normal;background:var(--a-accent);color:var(--a-on-accent);padding:0 8px;border-radius:calc(var(--r)*.5)}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:16px}
+.day{border-radius:calc(var(--r)*.75);padding:8px 0;text-align:center;font-size:11px;color:var(--a-muted);background:transparent;border:1px solid var(--a-line)}
+.day b{display:block;font-size:15px;color:var(--a-fg);margin-top:2px}
+.day.on{background:var(--a-accent);border-color:var(--a-accent);color:var(--a-on-accent)}
+.day.on b{color:var(--a-on-accent)}
+.day .dot{width:4px;height:4px;border-radius:50%;background:var(--d-mk);margin:4px auto 0}
+.day.on .dot{background:var(--a-on-accent)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px}
+.stat{padding:12px}
+.stat b{font-size:24px;display:block;font-variant-numeric:tabular-nums;font-family:var(--f-head),var(--f-body),sans-serif}
+.stat span{font-size:11.5px;color:var(--a-muted)}
+.stat.hot{background:var(--a-accent);color:var(--a-on-accent);border-color:transparent}
+.stat.hot span{color:var(--a-on-accent);opacity:.75}
+.sec{display:flex;justify-content:space-between;align-items:baseline;margin:4px 2px 10px}
+.sec h3{margin:0;font-size:16px}
+.sec a{font-size:12px;color:var(--a-muted);text-decoration:none}
+.proj{padding:14px;display:flex;gap:12px;align-items:center;margin-bottom:10px}
+.proj .info{flex:1;min-width:0}
+.proj b{display:block;font-size:15px}
+.proj small{color:var(--a-muted)}
+.ring{--p:50;width:48px;height:48px;border-radius:50%;flex:none;display:grid;place-items:center;font-size:11px;font-weight:700;
+  background:conic-gradient(var(--a-accent) calc(var(--p)*1%),var(--a-chip) 0)}
+.ring i{width:38px;height:38px;border-radius:50%;background:var(--a-card);display:grid;place-items:center;font-style:normal}
+.avs{display:flex;margin-top:8px}
+.av{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:10.5px;font-weight:700;color:#1B2632;border:2px solid var(--a-card);margin-left:-6px}
+.avs .av:first-child{margin-left:0}
+.chips{display:flex;gap:6px;overflow-x:auto;margin:4px -16px 12px;padding:0 16px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--a-line);background:transparent;color:var(--a-fg);border-radius:999px;padding:7px 12px;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px}
+.chip .dd{width:8px;height:8px;border-radius:50%}
+.chip.on{background:var(--a-fg);color:var(--a-bg);border-color:var(--a-fg)}
+.seg{display:grid;grid-template-columns:repeat(4,1fr);background:var(--a-chip);border-radius:calc(var(--r)*.7);padding:3px;margin-bottom:12px}
+.seg button{border:0;background:transparent;font:inherit;font-size:12.5px;font-weight:600;color:var(--a-muted);padding:7px 0;border-radius:calc(var(--r)*.6);cursor:pointer}
+.seg button.on{background:var(--a-card);color:var(--a-fg);box-shadow:var(--a-shadow)}
+.task{display:flex;gap:12px;padding:13px 14px;margin-bottom:8px;cursor:pointer;align-items:flex-start;text-align:left;width:100%;font:inherit;color:inherit}
+.task:focus-visible,.chip:focus-visible,.seg button:focus-visible,.tab:focus-visible{outline:2px solid var(--a-accent);outline-offset:2px}
+.chk{width:20px;height:20px;border-radius:50%;border:2px solid var(--a-line);flex:none;margin-top:1px}
+.task.done .chk{background:var(--d-edu);border-color:var(--d-edu)}
+.task.done .t{text-decoration:line-through;color:var(--a-muted)}
+.task .body{flex:1;min-width:0}
+.task .t{font-weight:600;line-height:1.3}
+.meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px;align-items:center;font-size:11.5px;color:var(--a-muted)}
+.tag{border-radius:999px;padding:2px 8px;font-weight:600;font-size:11px}
+.late{color:var(--a-danger);font-weight:700}
+.prio{display:inline-flex;gap:2px}
+.prio i{width:4px;height:10px;border-radius:2px;background:var(--a-line)}
+.prio i.f{background:var(--a-accent)}
+.fin-top{padding:16px;margin-bottom:10px}
+.fin-top small{color:var(--a-muted)}
+.fin-top b{display:block;font-size:30px;font-variant-numeric:tabular-nums;font-family:var(--f-head),var(--f-body),sans-serif;margin:2px 0 4px}
+.badge{display:inline-block;font-size:11px;font-weight:700;border-radius:999px;padding:2px 8px;background:color-mix(in srgb,var(--d-edu) 28%,transparent);color:var(--a-ok)}
+.fin-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.fin-row .card{padding:12px}
+.fin-row b{font-size:17px;display:block;font-variant-numeric:tabular-nums}
+.fin-row small{color:var(--a-muted);font-size:11.5px}
+.bars{padding:14px 14px 10px}
+.bars .cols{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;align-items:end;height:120px;margin-top:10px}
+.bars .col{background:var(--a-chip);border-radius:calc(var(--r)*.45);position:relative}
+.bars .col.on{background:var(--a-accent)}
+button.col{border:0;padding:0;cursor:pointer;width:100%;align-self:end}
+button.stat{font:inherit;text-align:left;cursor:pointer;width:100%;color:var(--a-fg)}
+button.stat.hot{color:var(--a-on-accent)}
+.sheet{max-height:88%;overflow-y:auto}
+.sheet .chips{margin:0 -18px 12px;padding:0 18px}
+.inp{width:100%;font:inherit;font-size:16px;padding:12px 14px;border-radius:calc(var(--r)*.8);border:1px solid var(--a-line);background:var(--a-card);color:var(--a-fg);margin:0 0 14px;outline:none}
+.inp:focus{border-color:var(--a-accent)}
+.inp.err{border-color:var(--a-danger)}
+.lbl2{font-size:12px;color:var(--a-muted);margin:0 2px 6px;font-weight:600}
+.hint2{font-size:12px;color:var(--a-muted);margin:2px 2px 14px}
+.tg2{width:46px;height:28px;border-radius:14px;border:0;background:var(--a-line);position:relative;cursor:pointer;flex:none;padding:0;transition:background .2s}
+.tg2::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.tg2.on{background:var(--a-accent)}
+.tg2.on::after{transform:translateX(18px)}
+.rows2{padding:2px 14px;margin-bottom:16px}
+.srow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid var(--a-line)}
+.srow:last-child{border-bottom:0}
+.srow b{font-weight:600;display:block}
+.srow small{display:block;color:var(--a-muted);font-size:12px;margin-top:1px}
+.srow .who{display:flex;align-items:center;gap:10px}
+.srow .who .av{width:32px;height:32px;margin:0;font-size:13px}
+.srow .val{color:var(--a-muted)}
+.backb{border:0;background:transparent;color:var(--a-muted);font:inherit;font-weight:600;padding:4px 0;cursor:pointer}
+.now{font-size:13px;color:var(--a-muted);margin:-4px 2px 12px}
+.now b{color:var(--a-fg)}
+button.srow{width:100%;background:transparent;border:0;border-bottom:1px solid var(--a-line);font:inherit;color:inherit;text-align:left;cursor:pointer}
+.rows2 .srow:last-child{border-bottom:0}
+.rad{width:22px;height:22px;border-radius:50%;border:2px solid var(--a-line);flex:none;display:grid;place-items:center;font-size:12px;font-weight:800;color:var(--a-on-accent)}
+.rad.on{background:var(--a-accent);border-color:var(--a-accent)}
+.rad.on::after{content:"✓"}
+.rchips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+.rchip{display:inline-flex;align-items:center;gap:6px;background:var(--a-card);border:1px solid var(--a-line);border-radius:999px;padding:5px 6px 5px 12px;font-size:13px;font-weight:600}
+.rchip button{border:0;background:var(--a-chip);color:var(--a-muted);width:22px;height:22px;border-radius:50%;cursor:pointer;font-size:15px;line-height:1;padding:0}
+.radd{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px}
+.rnum{display:inline-flex;gap:6px;align-items:center;font-size:13px;color:var(--a-muted)}
+.rnum input,.rnum select{font:inherit;font-size:16px;padding:6px 8px;border-radius:10px;border:1px solid var(--a-line);background:var(--a-card);color:var(--a-fg)}
+.rnum input{width:58px}
+.chip[disabled]{opacity:.4;cursor:default}
+.rows .clk{cursor:pointer}
+.rows .clk b::after{content:" ›";color:var(--a-muted);font-weight:500}
+.rows .rtxt{text-align:right;max-width:62%}
+
+.bars .lbl{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;text-align:center;font-size:11px;color:var(--a-muted);margin-top:6px}
+.note{font-size:11px;color:var(--a-muted);text-align:center;margin-top:10px}
+.tabbar{position:absolute;left:12px;right:12px;bottom:12px;display:grid;grid-template-columns:1fr 1fr 64px 1fr 1fr;justify-items:center;align-items:center;
+  background:var(--a-fg);border-radius:calc(var(--r) + 6px);padding:8px 6px;box-shadow:0 12px 30px -12px rgba(0,0,0,.4)}
+.tab{border:0;background:transparent;color:color-mix(in srgb,var(--a-bg) 60%,transparent);font:inherit;font-size:10.5px;font-weight:600;display:grid;justify-items:center;gap:3px;padding:6px 10px;cursor:pointer;border-radius:12px}
+.tab svg{width:20px;height:20px}
+.tabbar .tab:nth-of-type(n+3){grid-column:auto}
+.tabbar::before{content:"";grid-column:3;grid-row:1}
+.tab.on{color:var(--a-accent)}
+.fab{position:absolute;left:calc(50% - 26px);top:-22px;width:52px;height:52px;margin:0;padding:0;-webkit-appearance:none;appearance:none;border-radius:50%;border:0;background:var(--a-accent);color:var(--a-on-accent);cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 18px -6px color-mix(in srgb,var(--a-accent) 70%,transparent)}
+.fab svg{width:22px;height:22px;display:block}
+.sheet-bg{position:absolute;inset:0;background:rgba(15,20,27,.35);opacity:0;pointer-events:none;transition:opacity .25s}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--a-bg);border-radius:calc(var(--r) + 10px) calc(var(--r) + 10px) 0 0;padding:10px 18px 22px;transform:translateY(105%);transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+.app.open .sheet-bg{opacity:1;pointer-events:auto}
+.app.open .sheet{transform:none}
+.grab{width:40px;height:5px;border-radius:3px;background:var(--a-line);margin:0 auto 14px}
+.sheet h2{font-size:21px;margin:8px 0 14px;line-height:1.2}
+.rows{padding:4px 14px;margin-bottom:14px}
+.rows div{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--a-line);gap:10px}
+.rows div:last-child{border-bottom:0}
+.rows span{color:var(--a-muted)}
+.rows b{font-weight:600;display:flex;align-items:center;gap:6px}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btn{border:0;border-radius:calc(var(--r)*.8);padding:13px;font:inherit;font-weight:700;cursor:pointer}
+.btn.pri{background:var(--a-accent);color:var(--a-on-accent)}
+.btn.sec2{background:var(--a-chip);color:var(--a-fg)}
+.cal{padding:14px;margin-bottom:14px}
+.cal .hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.cal .hd b{font-size:16px}
+.cal .hd span{color:var(--a-muted);font-size:18px;letter-spacing:6px}
+.cal .g{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+.cal .wd{font-size:10.5px;color:var(--a-muted);padding-bottom:4px}
+.cd{border:0;background:transparent;color:var(--a-fg);font:inherit;font-size:13px;font-weight:600;aspect-ratio:1;border-radius:calc(var(--r)*.55);cursor:pointer;display:grid;place-items:center;position:relative;font-variant-numeric:tabular-nums}
+.cd.past{color:var(--a-muted);font-weight:500}
+.cd.has::after{content:"";position:absolute;bottom:5px;width:5px;height:5px;border-radius:50%;background:var(--a-accent)}
+.cd.has.late::after{background:var(--a-danger)}
+.cd.today{box-shadow:inset 0 0 0 1.5px var(--a-fg)}
+.cd.sel{background:var(--a-accent);color:var(--a-on-accent)}
+.cd.sel::after{background:var(--a-on-accent)}
+.plist{display:grid;gap:8px}
+.pitem{display:flex;align-items:center;gap:12px;padding:14px;width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.pitem .info{flex:1}
+.pitem b{display:block;font-size:15px}
+.pitem small{color:var(--a-muted)}
+.pitem .ok{width:22px;height:22px;border-radius:50%;background:var(--a-accent);color:var(--a-on-accent);display:grid;place-items:center;font-size:13px;font-weight:800}
+.proj{cursor:pointer}
+.day{cursor:pointer;font:inherit;font-size:11px;display:grid;align-content:start;justify-items:center}
+.mitem{display:flex;align-items:center;gap:12px;padding:14px;width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.mitem .ic{width:36px;height:36px;border-radius:calc(var(--r)*.6);background:var(--a-chip);display:grid;place-items:center;flex:none}
+.mitem .ic svg{width:18px;height:18px}
+.mitem b{display:block}
+.mitem small{color:var(--a-muted)}
+@media (prefers-reduced-motion:reduce){.sheet,.sheet-bg,.app{transition:none}}
+
+
+/* ---------- Mini App overrides ---------- */
+html,body{height:100%;margin:0}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{padding:0;font-family:"Manrope",system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+.app{position:fixed;inset:0;height:auto;border-radius:0;--a-accent:#C86A4A;--a-on-accent:#FBF8F2;--r:10px}
+.tg{padding:10px 16px 6px}
+.tg .ttl{text-align:left;font-size:15px;font-weight:700;display:flex;align-items:center;gap:6px;padding:6px 10px;background:var(--a-chip)}
+.tg .ttl::after{content:"▾";font-size:11px;color:var(--a-muted)}
+.scr{inset:52px 0 0;padding-bottom:calc(110px + env(safe-area-inset-bottom,0px))}
+.tabbar{bottom:calc(12px + env(safe-area-inset-bottom,0px))}
+.sheet{padding-bottom:calc(22px + env(safe-area-inset-bottom,0px))}
+
+/* ---- живая версия ---- */
+.app{--dc0:#E89A4F;--dc1:#8E9E73;--dc2:#B8964A;--dc3:#2F3E51;--dc4:#C86A4A;--dc5:#7C93B0;--dc6:#A6A39A}
+.app[data-mode="dark"]{--dc0:#FFB162;--dc1:#A3B18A;--dc2:#C6A75E;--dc3:#8FA3BC;--dc4:#E59072;--dc5:#9FB3CC;--dc6:#6F7A86}
+.day .dot{background:var(--a-accent)}
+.task.done .chk{background:var(--dc1);border-color:var(--dc1)}
+.mnav{display:flex;gap:4px;letter-spacing:0}
+.mnav button{border:0;background:var(--a-chip);color:var(--a-fg);width:30px;height:30px;border-radius:50%;font-size:17px;cursor:pointer;line-height:1}
+.proj .val{color:var(--a-muted);font-size:20px}
+#toast{position:absolute;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:var(--a-fg);color:var(--a-bg);padding:10px 16px;border-radius:12px;font-weight:600;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:50;max-width:86%;text-align:center}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+<div class="app" id="app" data-mode="light">
+  <div class="tg">
+    <button class="ttl" id="projbtn" aria-label="Сменить проект"><span id="projname"></span></button>
+    <button class="pill" id="more" aria-label="Настройки" style="border:0;font:inherit;cursor:pointer;width:36px;height:36px;padding:0;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+  </div>
+  <div class="scr" id="scr"></div>
+  <nav class="tabbar">
+        <button class="tab on" data-tab="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>Главная</button>
+        <button class="tab" data-tab="tasks"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg>Задачи</button>
+        <button class="fab" id="fab" aria-label="Новая задача"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 4v16M4 12h16"/></svg></button>
+        <button class="tab" data-tab="cal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Календарь</button>
+        <button class="tab" data-tab="fin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Финансы</button>
+        <button class="tab" data-tab="team"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.5-5.5 6.5-5.5s5.7 2 6.5 5.5"/><circle cx="17.5" cy="9" r="2.5"/><path d="M17 14.5c2.3.2 4 1.8 4.6 4.5"/></svg>Команда</button>
+      </nav>
+  <div class="sheet-bg" id="sheetbg"></div>
+  <div class="sheet" id="sheet" role="dialog" aria-label="Панель"></div>
+</div>
+<script>
+/* ===== Core Mini App: живые данные через API ===== */
+const API=window.CORE_API||'https://45-10-42-178.sslip.io/api';
+const tg=window.Telegram&&window.Telegram.WebApp;
+const app=document.getElementById('app'),scr=document.getElementById('scr'),sheet=document.getElementById('sheet');
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const AV_COLORS=['#C6A75E','#E08A6B','#A3B18A','#8FA3BC','#C9A0B6','#7FB5A8','#D9B37A','#9C8FC4'];
+const PRIO={low:1,medium:2,high:3},PRIO_BACK={1:'low',2:'medium',3:'high'};
+const TZS=[['Europe/Moscow','Москва'],['Europe/Kaliningrad','Калининград'],['Europe/Samara','Самара'],['Asia/Yekaterinburg','Екатеринбург'],['Asia/Novosibirsk','Новосибирск'],['Asia/Vladivostok','Владивосток'],['Europe/Madrid','Мадрид'],['Asia/Tbilisi','Тбилиси'],['Asia/Dubai','Дубай'],['Europe/London','Лондон']];
+const PRE=[['minimum','Минимум','утром','morning'],['normal','Обычный','за день и утром','1d,morning'],['max','Ничего не пропущу','за неделю, день, утром, за час','1w,1d,morning,1h'],['none','Без напоминаний','','']];
+
+let ME=null,B=null; // ME = /me, B = /project/{id}
+const st={tab:'home',dept:'all',filter:'all',proj:null,calKey:null,calF:'all',calMonth:null};
+let team={},deptIdx={},nt={},ed={},rem={},fin=null;
+
+/* ---------- API ---------- */
+async function api(path,body){
+  const r=await fetch(API+path,{method:body===undefined?'GET':'POST',
+    headers:{'Authorization':'tma '+(tg?tg.initData:''),'Content-Type':'application/json'},
+    body:body===undefined?undefined:JSON.stringify(body)});
+  let j={};try{j=await r.json()}catch(e){}
+  if(!r.ok)throw new Error(j.error||('Ошибка '+r.status));
+  return j;
+}
+function toast(msg){let t=document.getElementById('toast');if(!t){t=document.createElement('div');t.id='toast';app.appendChild(t)}
+  t.textContent=msg;t.className='show';clearTimeout(t._h);t._h=setTimeout(()=>t.className='',2600)}
+async function act(fn,okMsg){try{const r=await fn();if(okMsg)toast(okMsg);return r}catch(e){toast(e.message);throw e}}
+
+/* ---------- время ---------- */
+const userTz=()=>(ME&&ME.tz)||'Europe/Moscow';
+const projTz=()=>(B&&B.project.tz)||'Europe/Moscow';
+const fmtKey=(ms,tz)=>new Intl.DateTimeFormat('en-CA',{timeZone:tz,year:'numeric',month:'2-digit',day:'2-digit'}).format(ms);
+const fmtTime=(ms,tz)=>new Intl.DateTimeFormat('ru-RU',{timeZone:tz,hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(ms);
+const fmtDay=key=>{const [y,m,d]=key.split('-').map(Number);return new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'long',timeZone:'UTC'}).format(Date.UTC(y,m-1,d))};
+const keyAdd=(key,n)=>{const [y,m,d]=key.split('-').map(Number);return new Date(Date.UTC(y,m-1,d+n)).toISOString().slice(0,10)};
+const wdOf=key=>{const [y,m,d]=key.split('-').map(Number);return (new Date(Date.UTC(y,m-1,d)).getUTCDay()+6)%7};
+const todayKey=()=>fmtKey(Date.now(),userTz());
+function tzOffset(ms,tz){const p=Object.fromEntries(new Intl.DateTimeFormat('en-US',{timeZone:tz,hourCycle:'h23',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'}).formatToParts(ms).map(x=>[x.type,x.value]));
+  return Date.UTC(+p.year,p.month-1,+p.day,+p.hour,+p.minute,+p.second)-ms}
+function wallToMs(key,hm,tz){const [y,m,d]=key.split('-').map(Number),[h,mi]=hm.split(':').map(Number);
+  let g=Date.UTC(y,m-1,d,h,mi);let ms=g-tzOffset(g,tz);ms=g-tzOffset(ms,tz);return ms}
+/* выбранные в приложении день+время (по поясу человека) → дата+время проекта для сервера */
+function toProject(key,hm){
+  if(!key)return {deadline:null,time:null};
+  if(!hm)return {deadline:key,time:null};
+  const ms=wallToMs(key,hm,userTz());
+  return {deadline:fmtKey(ms,projTz()),time:fmtTime(ms,projTz())};
+}
+const dueMs=x=>x.dueTs?x.dueTs*1000:null;
+const dueKey=x=>x.dueTs?fmtKey(dueMs(x),userTz()):null;
+const isLate=x=>!x.done&&x.dueTs&&Date.now()>dueMs(x);
+const dayWord=k=>{const t=todayKey();return k===t?'сегодня':k===keyAdd(t,1)?'завтра':k===keyAdd(t,-1)?'вчера':fmtDay(k).replace(/ (\S+)$/,(m,mo)=>' '+mo.slice(0,3))};
+const dl=x=>x.dueTs?dayWord(dueKey(x))+(x.time?' в '+fmtTime(dueMs(x),userTz()):''):'без срока';
+const fullDate=x=>x.dueTs?`${fmtDay(dueKey(x))}${x.time?' в ':', до '}${fmtTime(dueMs(x),userTz())}`:'без срока';
+
+/* ---------- напоминания ---------- */
+const pl=(n,a,b,c)=>n%10===1&&n%100!==11?a:[2,3,4].includes(n%10)&&![12,13,14].includes(n%100)?b:c;
+function ruleLabel(c){if(c==='morning')return 'утром';const m=/^(\d+)([hdw])$/.exec(c);if(!m)return c;const n=+m[1];
+  if(m[2]==='h')return n===1?'за час':`за ${n} ${pl(n,'час','часа','часов')}`;
+  if(m[2]==='d')return n===1?'за день':`за ${n} ${pl(n,'день','дня','дней')}`;
+  return n===1?'за неделю':`за ${n} ${pl(n,'неделю','недели','недель')}`}
+const wt=c=>{if(c==='morning')return 12;const m=/^(\d+)([hdw])$/.exec(c);return m?+m[1]*({h:1,d:24,w:168})[m[2]]:0};
+const sortR=l=>[...new Set(l)].sort((a,b)=>wt(b)-wt(a));
+const rulesText=r=>!r?'без напоминаний':sortR(r.split(',').filter(Boolean)).map(ruleLabel).join(', ');
+const presetOf=r=>{const p=PRE.find(x=>x[3]===sortR((r||'').split(',').filter(Boolean)).join(','));return p?p[0]:'custom'};
+const memberRules=uid=>{if(uid===ME.id)return ME.rules;const m=B.members.find(x=>x.id===uid);return m?m.rulesLabel:''};
+const defRemText=uid=>!uid?'по настройкам владельца':uid===ME.id?rulesText(ME.rules):`у исполнителя (${team[uid]?team[uid].n:'?'}): ${memberRules(uid)}`;
+const taskRemText=x=>x.rules==null?`как обычно (${defRemText(x.assignee)})`:rulesText(x.rules);
+
+/* ---------- вид ---------- */
+const isAdmin=()=>B&&['owner','admin'].includes(B.project.role);
+const deptName=id=>{const d=B.departments.find(x=>x.id===id);return d?d.name:'Без отдела'};
+const deptColor=id=>`var(--dc${id&&deptIdx[id]!=null?deptIdx[id]%6:6})`;
+const av=k=>k&&team[k]?`<span class="av" style="background:${team[k].c}">${esc(team[k].n[0]||'?')}</span>`:'<span class="av" style="background:var(--a-chip)">–</span>';
+const tag=id=>`<span class="tag" style="background:color-mix(in srgb,${deptColor(id)} 22%,transparent);color:var(--a-fg)">${esc(deptName(id))}</span>`;
+const prio=p=>`<span class="prio" title="Приоритет">${[1,2,3].map(i=>`<i class="${i<=PRIO[p]?'f':''}"></i>`).join('')}</span>`;
+const plural=n=>pl(n,'задача','задачи','задач');
+const tasks=()=>B?B.tasks:[];
+const open=()=>tasks().filter(x=>!x.done);
+const mine=l=>l.filter(x=>x.assignee===ME.id);
+function taskCard(x){const l=isLate(x);return `<button class="card task ${x.done?'done':''}" data-id="${x.id}"><span class="chk"></span><span class="body"><span class="t">${esc(x.title)}</span>
+ <span class="meta">${tag(x.dept)}<span class="${l?'late':''}">${l?'просрочено · ':''}${dl(x)}</span>${prio(x.priority)}</span></span>${av(x.assignee)}</button>`}
+const myFirst=()=>{const n=(tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user&&tg.initDataUnsafe.user.first_name)||ME.name||'';return n.trim().split(/\s+/)[0]};
+function weekDone(){const from=keyAdd(todayKey(),-6);return tasks().filter(x=>x.done&&x.completedAt&&x.completedAt>=from&&(isAdmin()||x.assignee===ME.id))}
+
+function home(){
+  const t=todayKey(),o=open(),my=mine(o),focus=isAdmin()?o:my;
+  const todayMine=my.filter(x=>x.dueTs&&(dueKey(x)<=t)).length;
+  const myDays=new Set(my.map(dueKey));
+  const wdn=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+  const all=tasks(),pc=all.length?Math.round(all.filter(x=>x.done).length/all.length*100):0;
+  return `<div class="hello"><small>${new Intl.DateTimeFormat('ru-RU',{weekday:'long',day:'numeric',month:'long',timeZone:userTz()}).format(Date.now()).replace(/^./,c=>c.toUpperCase())}</small><h2 class="head">Привет, ${esc(myFirst())}!<br>${todayMine?`Сегодня у тебя <em>${todayMine} ${plural(todayMine)}</em>`:'На сегодня всё чисто'}</h2></div>
+  <div class="week">${[0,1,2,3,4,5,6].map(i=>{const k=keyAdd(t,i);return `<button class="day ${i===0?'on':''}" data-goday="${k}">${wdn[wdOf(k)]}<b>${+k.slice(8)}</b>${myDays.has(k)?'<div class="dot"></div>':''}</button>`}).join('')}</div>
+  <div class="stats"><button class="card stat hot" data-stat="work"><b>${focus.length}</b><span>${isAdmin()?'в работе':'мои в работе'}</span></button>
+  <button class="card stat" data-stat="late"><b style="color:var(--a-danger)">${focus.filter(isLate).length}</b><span>просрочено</span></button>
+  <button class="card stat" data-stat="done"><b>${weekDone().length}</b><span>готово за неделю</span></button></div>
+  <div class="sec"><h3>Проекты</h3></div>
+  ${ME.projects.map(p=>`<div class="card proj" data-proj="${p.id}"><div class="info"><b class="head">${esc(p.name)}</b><small>${esc(p.roleRu)}${p.id===st.proj?` · ${o.length} в работе`:''}</small>${p.id===st.proj?`<div class="avs">${B.members.slice(0,6).map(m=>av(m.id)).join('')}</div>`:''}</div>
+    ${p.id===st.proj?`<div class="ring" style="--p:${pc}"><i>${pc}%</i></div>`:'<span class="val">›</span>'}</div>`).join('')}
+  <div class="sec" style="margin-top:14px"><h3>${isAdmin()?'Горит сегодня':'Мне на сегодня'}</h3></div>
+  ${focus.filter(x=>x.dueTs&&dueKey(x)<=t).sort((a,b)=>a.dueTs-b.dueTs).map(taskCard).join('')||'<p class="note">Ничего не горит. Красота</p>'}`;
+}
+function tasksScr(){
+  let l=tasks().filter(x=>st.dept==='all'||String(x.dept||0)===st.dept);
+  if(st.filter==='done')l=l.filter(x=>x.done&&(isAdmin()||x.assignee===ME.id)).sort((a,b)=>(b.completedAt||'').localeCompare(a.completedAt||''));
+  else{l=l.filter(x=>!x.done);if(st.filter==='mine')l=mine(l);if(st.filter==='late')l=l.filter(isLate);
+    l.sort((a,b)=>(a.dueTs||9e12)-(b.dueTs||9e12))}
+  const used=[...new Set(tasks().map(x=>String(x.dept||0)))];
+  const chips=[['all','Все отделы']].concat(B.departments.filter(d=>used.includes(String(d.id))).map(d=>[String(d.id),d.name])).concat(used.includes('0')?[['0','Без отдела']]:[]);
+  return `<div class="hello"><h2 class="head">Задачи</h2><small>${esc(B.project.name)}</small></div>
+  ${chips.length>2?`<div class="chips">${chips.map(([k,n])=>`<button class="chip ${st.dept===k?'on':''}" data-dept="${k}">${k!=='all'?`<span class="dd" style="background:${deptColor(+k)}"></span>`:''}${esc(n)}</button>`).join('')}</div>`:''}
+  <div class="seg">${[['all','Все'],['mine','Мои'],['late','Просрочено'],['done','Готово']].map(([k,n])=>`<button class="${st.filter===k?'on':''}" data-f="${k}">${n}</button>`).join('')}</div>
+  ${l.length?l.map(taskCard).join(''):'<p class="note">Тут пусто. Можно выдохнуть</p>'}`;
+}
+function cal(){
+  if(!isAdmin())st.calF='mine';
+  const t=todayKey();st.calKey=st.calKey||t;st.calMonth=st.calMonth||t.slice(0,7);
+  const l=open().filter(x=>x.dueTs&&(st.calF==='all'||x.assignee===ME.id));
+  const by={};l.forEach(x=>(by[dueKey(x)]=by[dueKey(x)]||[]).push(x));
+  const first=st.calMonth+'-01',lead=wdOf(first),[y,m]=st.calMonth.split('-').map(Number),nd=new Date(Date.UTC(y,m,0)).getUTCDate();
+  let cells='';for(let i=0;i<lead;i++)cells+='<span></span>';
+  for(let d=1;d<=nd;d++){const k=st.calMonth+'-'+String(d).padStart(2,'0'),h=by[k],late=h&&h.some(isLate);
+    cells+=`<button class="cd ${k<t?'past':''} ${h?'has':''} ${late?'late':''} ${k===t?'today':''} ${k===st.calKey?'sel':''}" data-day="${k}">${d}</button>`}
+  const sel=(by[st.calKey]||[]).sort((a,b)=>a.dueTs-b.dueTs);
+  const mName=new Intl.DateTimeFormat('ru-RU',{month:'long',year:'numeric',timeZone:'UTC'}).format(Date.UTC(y,m-1,1)).replace(' г.','');
+  return `<div class="hello"><h2 class="head">${isAdmin()?'Календарь':'Мой календарь'}</h2><small>${esc(B.project.name)}</small></div>
+  ${isAdmin()?`<div class="seg" style="grid-template-columns:1fr 1fr">${[['all','Вся команда'],['mine','Мои']].map(([k,n])=>`<button class="${st.calF===k?'on':''}" data-cf="${k}">${n}</button>`).join('')}</div>`:''}
+  <div class="card cal"><div class="hd"><b class="head">${mName.replace(/^./,c=>c.toUpperCase())}</b><span class="mnav"><button data-mon="-1" aria-label="Прошлый месяц">‹</button><button data-mon="1" aria-label="Следующий месяц">›</button></span></div>
+  <div class="g">${['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].map(w=>`<span class="wd">${w}</span>`).join('')}${cells}</div></div>
+  <div class="sec"><h3>${st.calKey===t?'Сегодня':fmtDay(st.calKey)}</h3></div>
+  ${sel.length?sel.map(taskCard).join(''):'<p class="note">На этот день дедлайнов нет</p>'}`;
+}
+const money=v=>v==null?'нет данных':Math.round(v).toLocaleString('ru-RU')+' ₽';
+function finScr(){
+  const head=`<div class="hello"><h2 class="head">Финансы</h2><small>${esc(B.project.name)}</small></div>`;
+  if(!fin){loadFin();return head+'<p class="note">Загружаю данные из таблицы…</p>'}
+  if(fin.err)return head+`<p class="note">Не удалось загрузить: ${esc(fin.err)}</p>`;
+  if(!fin.linked)return head+'<div class="card fin-top"><b style="font-size:17px">Таблица ещё не привязана</b><small>Привязать её можно в боте: проект → 💰 Финансы → 🔗 Привязать таблицу.</small></div>';
+  if(fin.error)return head+`<div class="card fin-top"><small>Таблица ответила с ошибкой</small><p style="margin:6px 0 0">${esc(fin.error)}</p></div>`;
+  return head+`<div class="card fin-top"><small>Прибыль · ${esc(fin.sheetName||'текущий месяц')}</small><b style="${(fin.profit||0)<0?'color:var(--a-danger)':''}">${money(fin.profit)}</b></div>
+  <div class="fin-row"><div class="card"><small>Выручка</small><b>${money(fin.revenue)}</b></div><div class="card"><small>Расходы</small><b>${money(fin.expenses)}</b></div></div>
+  <p class="note">Цифры берутся из вашей Google-таблицы. История по месяцам появится, когда таблица научится её отдавать.</p>`;
+}
+async function loadFin(){try{fin=await api(`/project/${st.proj}/finance`)}catch(e){fin={err:e.message}}if(st.tab==='fin')render()}
+function teamScr(){
+  return `<div class="hello"><h2 class="head">Команда</h2><small>${esc(B.project.name)}</small></div>
+  ${B.members.map(m=>{const n=open().filter(x=>x.assignee===m.id).length;return `<div class="card proj" style="cursor:default"><span class="av" style="background:${team[m.id].c};width:40px;height:40px;font-size:15px;margin:0">${esc(m.name[0]||'?')}</span>
+  <div class="info"><b>${esc(m.name)}${m.id===ME.id?' (ты)':''}</b><small>${esc(m.roleRu)} · ${n} в работе</small></div></div>`}).join('')}`;
+}
+function render(){
+  if(!B)return;
+  const adm=isAdmin();
+  if(!adm&&st.tab==='fin')st.tab='home';
+  document.querySelector('.tab[data-tab="fin"]').hidden=!adm;
+  document.querySelector('.tab[data-tab="team"]').hidden=adm;
+  document.getElementById('projname').textContent=B.project.name;
+  scr.innerHTML={home,tasks:tasksScr,fin:finScr,cal,team:teamScr}[st.tab]();
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===st.tab));
+}
+
+/* ---------- загрузка ---------- */
+function setBundle(b){
+  B=b;team={};deptIdx={};
+  b.members.forEach((m,i)=>team[m.id]={n:m.name,c:AV_COLORS[i%AV_COLORS.length],role:m.roleRu});
+  b.departments.forEach((d,i)=>deptIdx[d.id]=i);
+}
+async function loadProject(pid,keepTab){
+  st.proj=pid;try{localStorage.setItem('coreProject',pid)}catch(e){}
+  fin=null;setBundle(await api('/project/'+pid));
+  if(!keepTab){st.dept='all'}
+  render();
+}
+const refresh=()=>loadProject(st.proj,true);
+async function boot(){
+  scr.innerHTML='<p class="note" style="margin-top:40px">Загружаю Core…</p>';
+  try{ME=await api('/me')}catch(e){scr.innerHTML=`<p class="note" style="margin-top:40px">${esc(e.message)}</p>`;return}
+  if(!ME.projects.length){document.getElementById('projname').textContent='Core';
+    scr.innerHTML='<div class="hello"><h2 class="head">Пока нет проектов</h2></div><p class="note">Создай проект в боте или попроси ссылку-приглашение у владельца проекта.</p>';return}
+  let pid=null;try{pid=+localStorage.getItem('coreProject')}catch(e){}
+  const sp=tg&&tg.initDataUnsafe&&tg.initDataUnsafe.start_param;const m=/^p(\d+)/.exec(sp||'');if(m)pid=+m[1];
+  if(!ME.projects.some(p=>p.id===pid))pid=ME.projects[0].id;
+  try{await loadProject(pid)}catch(e){scr.innerHTML=`<p class="note" style="margin-top:40px">${esc(e.message)}</p>`}
+}
+/* END app.js part1 */
+
+/* ---------- листы снизу ---------- */
+function openSheet(html){sheet.innerHTML='<div class="grab"></div>'+html;app.classList.add('open')}
+const closeSheet=()=>app.classList.remove('open');
+const findTask=id=>tasks().find(t=>t.id==id);
+function openTask(id){
+  const x=findTask(id);if(!x)return;const l=isLate(x);
+  openSheet(`${tag(x.dept)}<h2 class="head">${esc(x.title)}</h2>
+  <div class="card rows"><div><span>Исполнитель</span><b>${av(x.assignee)}${x.assignee&&team[x.assignee]?esc(team[x.assignee].n):'не назначен'}</b></div>
+  <div class="clk" data-edit="${x.id}"><span>Дедлайн</span><b class="${l?'late':''}">${fullDate(x)}</b></div>
+  <div class="clk" data-remtask="${x.id}"><span>🔔 Напоминания</span><b class="rtxt">${esc(taskRemText(x))}</b></div>
+  <div><span>Приоритет</span><b>${prio(x.priority)} ${({low:'низкий',medium:'средний',high:'высокий'})[x.priority]||''}</b></div>
+  <div><span>Статус</span><b>${x.done?'Готово':l?'Просрочено':'В работе'}</b></div></div>
+  ${userTz()!==projTz()&&x.dueTs?`<p class="hint2">Время показано по твоему поясу.</p>`:''}
+  <div class="btns"><button class="btn sec2" data-edit="${x.id}">Изменить срок</button><button class="btn pri" id="doneb">${x.done?'Вернуть в работу':'Выполнено'}</button></div>`);
+  document.getElementById('doneb').onclick=async e=>{e.target.disabled=true;
+    try{const r=await act(()=>api(`/task/${x.id}/toggle`,{}),x.done?'Вернула в работу':'Готово ✅');closeSheet();await refresh()}catch(_){e.target.disabled=false}};
+}
+function dayChips(cur,attr){
+  const t=todayKey();let fri=t;while(wdOf(fri)!==4||fri===t)fri=keyAdd(fri,1);
+  const opts=[['сегодня',t],['завтра',keyAdd(t,1)],['пятница',fri],['через неделю',keyAdd(t,7)],['без срока','']];
+  if(cur&&!opts.some(o=>o[1]===cur))opts.splice(4,0,[fmtDay(cur),cur]);
+  return `<div class="chips">${opts.map(([n,k])=>`<button class="chip ${k===(cur||'')?'on':''}" ${attr}="${k}">${n}</button>`).join('')}</div>
+  <input type="date" class="inp" ${attr}-pick="1" value="${cur||''}" aria-label="Другая дата" style="margin-top:-4px">`;
+}
+function openEdit(id){
+  const x=findTask(id);if(!x)return;
+  if(ed.id!==x.id)ed={id:x.id,key:x.dueTs?dueKey(x):'',tm:x.time&&x.dueTs?fmtTime(dueMs(x),userTz()):''};
+  openSheet(`<button class="backb" data-back="task:${x.id}">‹ Назад</button><h2 class="head">Срок задачи</h2>
+  <div class="lbl2">День</div>${dayChips(ed.key,'data-edday')}
+  ${ed.key?`<div class="lbl2">Время <span style="font-weight:500">· необязательно</span></div>
+  <input id="ed-tm" class="inp" type="time" value="${ed.tm}"><p class="hint2" style="margin-top:-8px">Без времени — до 18:00</p>`:''}
+  <button class="btn pri" id="ed-ok" style="width:100%">Сохранить</button>`);
+  const tmEl=document.getElementById('ed-tm');if(tmEl)tmEl.oninput=e=>ed.tm=e.target.value;
+  document.getElementById('ed-ok').onclick=async e=>{if(tmEl)ed.tm=tmEl.value;e.target.disabled=true;
+    const p=toProject(ed.key,ed.key?ed.tm:'');
+    try{await act(()=>api(`/task/${x.id}/deadline`,{deadline:p.deadline,time:p.time}),'Срок сохранён');ed={};await refresh();openTask(x.id)}catch(_){e.target.disabled=false}};
+}
+function openNew(keep){
+  if(!B)return;
+  if(!keep)nt={dept:B.departments[0]?B.departments[0].id:null,a:ME.id,key:keyAdd(todayKey(),1),p:2,t:'',tm:''};
+  openSheet(`<h2 class="head">Новая задача</h2>
+  <input id="nt-t" class="inp" placeholder="Что нужно сделать?" autocomplete="off" value="${esc(nt.t)}">
+  ${B.departments.length?`<div class="lbl2">Отдел</div><div class="chips">${B.departments.map(d=>`<button class="chip ${d.id===nt.dept?'on':''}" data-ntk="dept" data-ntv="${d.id}"><span class="dd" style="background:${deptColor(d.id)}"></span>${esc(d.name)}</button>`).join('')}</div>`:''}
+  <div class="lbl2">Исполнитель</div><div class="chips">${B.members.map(m=>`<button class="chip ${m.id===nt.a?'on':''}" data-ntk="a" data-ntv="${m.id}">${esc(m.name)}${m.id===ME.id?' (я)':''}</button>`).join('')}</div>
+  <div class="lbl2">Срок</div>${dayChips(nt.key,'data-ntday')}
+  ${nt.key?`<div class="lbl2">Время <span style="font-weight:500">· необязательно</span></div>
+  <input id="nt-tm" class="inp" type="time" value="${nt.tm||''}"><p class="hint2" style="margin-top:-8px">Без времени — до 18:00</p>`:''}
+  <div class="lbl2">Напоминания</div>
+  <div class="card rows2"><button class="srow" data-remnew="1"><span><b>${nt.rr===undefined?'Как обычно':nt.rr===''?'Без напоминаний':'Свои'}</b>${nt.rr===''?'':`<small>${esc(nt.rr===undefined?defRemText(nt.a):rulesText(nt.rr))}</small>`}</span><span class="val">›</span></button></div>
+  <div class="lbl2">Приоритет</div><div class="seg" style="grid-template-columns:repeat(3,1fr)">${[[1,'низкий'],[2,'средний'],[3,'высокий']].map(([v,n])=>`<button class="${v===nt.p?'on':''}" data-ntk="p" data-ntv="${v}">${n}</button>`).join('')}</div>
+  <p class="hint2">Можно и как раньше: отправить боту текст или голосовое, он сам разберёт задачу.</p>
+  <button class="btn pri" id="nt-ok" style="width:100%">Создать задачу</button>`);
+  const ti=document.getElementById('nt-t'),tm=document.getElementById('nt-tm');
+  ti.oninput=e=>{e.target.classList.remove('err');nt.t=e.target.value};if(tm)tm.oninput=e=>nt.tm=e.target.value;
+  document.getElementById('nt-ok').onclick=async e=>{const t=ti.value.trim();
+    if(!t){ti.classList.add('err');ti.placeholder='Напиши, что нужно сделать';ti.focus();return}
+    e.target.disabled=true;const p=toProject(nt.key,nt.key&&tm?tm.value:'');
+    const body={project_id:st.proj,title:t,dept:nt.dept,assignee:nt.a,priority:PRIO_BACK[nt.p],deadline:p.deadline,time:p.time};
+    if(nt.rr!==undefined)body.rules=nt.rr;
+    try{await act(()=>api('/task',body),'Задача создана');closeSheet();st.tab='tasks';st.dept='all';st.filter='all';scr.scrollTop=0;await refresh()}catch(_){e.target.disabled=false}};
+}
+function saveNtInputs(){const i=document.getElementById('nt-t'),tm=document.getElementById('nt-tm');if(i)nt.t=i.value;if(tm)nt.tm=tm.value}
+
+/* напоминания: личные / задачи / новой задачи */
+function remCurrent(){if(rem.target==='user')return ME.rules;const o=rem.target==='new'?{rules:nt.rr===undefined?null:nt.rr}:findTask(rem.id);return o.rules==null?null:o.rules}
+function remValue(){if(rem.target==='user')return rem.mode==='custom'?sortR(rem.list).join(','):PRE.find(p=>p[0]===rem.mode)[3];
+  return rem.mode==='default'?null:rem.mode==='none'?'':sortR(rem.list).join(',')}
+async function remCommit(){
+  const v=remValue();
+  if(rem.target==='user'){const r=await act(()=>api('/me/rules',{rules:v}));ME.rules=r.rules;const m=B.members.find(x=>x.id===ME.id);if(m)m.rulesLabel=r.rulesLabel;return}
+  if(rem.target==='new'){nt.rr=v===null?undefined:v;return}
+  await act(()=>api(`/task/${rem.id}/rules`,{rules:v}));const x=findTask(rem.id);if(x)x.rules=v;
+}
+function builderHTML(list){
+  return `<div class="rchips">${list.length?list.map((c,i)=>`<span class="rchip">${ruleLabel(c)}<button data-rdel="${i}" aria-label="Убрать">×</button></span>`).join(''):'<span class="hint2" style="margin:0">Пока пусто — добавь напоминание</span>'}</div>
+  ${list.length<5?`<div class="radd"><button class="chip" data-radd="morning" ${list.includes('morning')?'disabled':''}>+ утром</button>
+  <span class="rnum"><span>за</span><input id="rn" type="number" min="1" max="99" value="1" inputmode="numeric" aria-label="Сколько"><select id="ru" aria-label="Единица"><option value="h">часов</option><option value="d" selected>дней</option><option value="w">недель</option></select><button class="chip" data-radd="n">+ добавить</button></span></div>`:'<p class="hint2">Максимум 5 напоминаний. Убери одно, чтобы добавить другое.</p>'}`;
+}
+function openRem(r){
+  if(r)rem=r;
+  const cur=remCurrent();let opts,title,defText='';
+  if(rem.target==='user'){title='Мои уведомления';opts=PRE.map(p=>[p[0],p[1],p[2]]).concat([['custom','Своё','собери набор сам, до 5']])}
+  else{const a=rem.target==='new'?nt.a:(findTask(rem.id)||{}).assignee;defText=defRemText(a);
+    title='Напоминания для задачи';opts=[['default','Как обычно',defText],['none','Без напоминаний',''],['custom','Свои для этой задачи','до 5']]}
+  openSheet(`<button class="backb" data-back="${rem.back}">‹ Назад</button><h2 class="head">${title}</h2>
+  <div class="now">Сейчас: <b>${esc(cur===null?defText:rulesText(cur))}</b></div>
+  <div class="card rows2">${opts.map(([k,n,s])=>`<button class="srow" data-rmode="${k}"><span><b>${n}</b>${s?`<small>${esc(s)}</small>`:''}</span><span class="rad ${rem.mode===k?'on':''}"></span></button>`).join('')}</div>
+  ${rem.mode==='custom'?`<div class="lbl2">Свой набор</div>${builderHTML(rem.list)}`:''}
+  ${rem.target==='user'?'<p class="hint2">Это те же настройки, что «🔔 Мои напоминания» в боте: поменяешь здесь — изменится и там.</p>':''}
+  <button class="btn pri" data-back="${rem.back}" style="width:100%">Готово</button>`);
+}
+function remFor(target,id,back){
+  let cur,mode;
+  if(target==='user'){cur=ME.rules;mode=presetOf(cur)}
+  else{const v=target==='new'?(nt.rr===undefined?null:nt.rr):findTask(id).rules;cur=v;mode=v==null?'default':v===''?'none':'custom'}
+  openRem({target,id,back,mode,list:cur?sortR(cur.split(',').filter(Boolean)):[]});
+}
+
+/* меню ⚙ */
+const ICO={team:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.5-5.5 6.5-5.5s5.7 2 6.5 5.5"/><circle cx="17.5" cy="9" r="2.5"/></svg>',
+ bell:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 21h4"/></svg>',
+ gear:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>'};
+function openMenu(){
+  if(!B)return;const items=[];
+  if(isAdmin())items.push(['team','Команда',B.members.length+' '+pl(B.members.length,'человек','человека','человек')+', роли']);
+  if(isAdmin())items.push(['bell','Уведомления команды','Кому писать о выполнении задач']);
+  items.push(['gear','Настройки','Тема, мои уведомления, часовой пояс']);
+  openSheet(`<h2 class="head">${esc(B.project.name)}</h2><div class="plist">${items.map(([k,n,d])=>`<button class="card mitem" data-menu="${k}"><span class="ic">${ICO[k]}</span><span><b>${n}</b><small>${d}</small></span></button>`).join('')}</div>`);
+}
+const tog=(k,on)=>`<button class="tg2 ${on?'on':''}" data-tog="${k}" role="switch" aria-checked="${on}" aria-label="Переключить"></button>`;
+let hapticOn=true;try{hapticOn=localStorage.getItem('coreHaptic')!=='0'}catch(e){}
+function openNotif(){
+  openSheet(`<button class="backb" data-back="menu">‹ Меню</button><h2 class="head">Уведомления команды</h2>
+  <div class="lbl2">Когда задача выполнена, писать</div>
+  <div class="card rows2">${B.members.map(m=>`<div class="srow"><span class="who">${av(m.id)}<span><b>${esc(m.name)}${m.id===ME.id?' (я)':''}</b><small>${esc(m.roleRu)}</small></span></span>${tog('watch.'+m.id,B.watchers.includes(m.id))}</div>`).join('')}</div>
+  <p class="hint2">Напоминания о дедлайнах теперь у каждого свои: ⚙ → Настройки → Мои уведомления.</p>`);
+}
+function openSettings(){
+  const th=window.__getTheme?window.__getTheme():'auto',tzn=(TZS.find(z=>z[0]===userTz())||[0,userTz()])[1];
+  openSheet(`<button class="backb" data-back="menu">‹ Меню</button><h2 class="head">Настройки</h2>
+  <div class="lbl2">Тема</div>
+  <div class="seg" style="grid-template-columns:repeat(3,1fr)">${[['auto','Как в Telegram'],['light','Светлая'],['dark','Тёмная']].map(([k,n])=>`<button class="${k===th?'on':''}" data-thset="${k}">${n}</button>`).join('')}</div>
+  <div class="lbl2">Напоминания и время</div>
+  <div class="card rows2">
+   <button class="srow" data-go="myrem"><span><b>Мои уведомления</b><small>${esc(rulesText(ME.rules))}</small></span><span class="val">›</span></button>
+   <button class="srow" data-go="tz"><span><b>Часовой пояс</b><small>${esc(tzn)} · «утром» = 9:00 по этому времени</small></span><span class="val">›</span></button></div>
+  <div class="lbl2">Приложение</div>
+  <div class="card rows2">
+   <div class="srow"><span><b>Вибрация при нажатиях</b></span>${tog('haptic',hapticOn)}</div>
+   <div class="srow"><span><b>Язык</b></span><span class="val">Русский</span></div></div>
+  <p class="note">Core</p>`);
+}
+function openTz(){
+  openSheet(`<button class="backb" data-back="settings">‹ Настройки</button><h2 class="head">Часовой пояс</h2>
+  <p class="hint2">От него зависит, когда приходит «утром» (9:00 по твоему времени) и как показывается время дедлайнов.</p>
+  <div class="card rows2">${TZS.map(([k,n])=>`<button class="srow" data-tzset="${k}"><span><b>${n}</b></span><span class="rad ${userTz()===k?'on':''}"></span></button>`).join('')}</div>`);
+}
+function openProjects(){
+  if(!ME)return;
+  openSheet(`<h2 class="head">Проекты</h2><div class="plist">${ME.projects.map(p=>
+   `<button class="card pitem" data-pick="${p.id}"><div class="info"><b class="head">${esc(p.name)}</b><small>${esc(p.roleRu)}</small></div>${p.id===st.proj?'<span class="ok">✓</span>':''}</button>`).join('')}</div>`);
+}
+function goBack(v){
+  if(v==='menu')return openMenu();
+  if(v==='settings')return openSettings();
+  if(v==='new')return openNew(true);
+  if(v.startsWith('task:'))return openTask(v.slice(5));
+}
+
+/* ---------- клики ---------- */
+sheet.addEventListener('click',async e=>{
+  const q=s=>e.target.closest(s);let b;
+  if(b=q('[data-pick]')){closeSheet();try{await loadProject(+b.dataset.pick)}catch(er){toast(er.message)}return}
+  if(b=q('[data-menu]')){const k=b.dataset.menu;if(k==='team'){closeSheet();st.tab='team';scr.scrollTop=0;render()}if(k==='bell')openNotif();if(k==='gear')openSettings();return}
+  if(b=q('[data-go]')){b.dataset.go==='tz'?openTz():remFor('user',null,'settings');return}
+  if(b=q('[data-tzset]')){const tz=b.dataset.tzset;try{await act(()=>api('/me/tz',{tz}),'Пояс сохранён');ME.tz=tz;render();openTz()}catch(_){}return}
+  if(b=q('[data-rmode]')){const nm=b.dataset.rmode;const prev={mode:rem.mode,list:rem.list.slice()};
+    if(nm==='custom'&&rem.mode!=='custom'){const cur=remCurrent();rem.list=cur?sortR(cur.split(',').filter(Boolean)):['1d','morning']}
+    rem.mode=nm;try{await remCommit();openRem()}catch(_){Object.assign(rem,prev);openRem()}return}
+  if(b=q('[data-rdel]')){const prev=rem.list.slice();rem.list.splice(+b.dataset.rdel,1);try{await remCommit()}catch(_){rem.list=prev}openRem();return}
+  if(b=q('[data-radd]')){if(b.disabled)return;let c='morning';
+    if(b.dataset.radd==='n'){const n=Math.max(1,Math.min(99,parseInt(document.getElementById('rn').value)||1));c=n+document.getElementById('ru').value}
+    const prev=rem.list.slice();if(rem.list.length<5&&!rem.list.includes(c))rem.list=sortR(rem.list.concat(c));
+    try{await remCommit()}catch(_){rem.list=prev}openRem();return}
+  if(b=q('[data-remtask]')){remFor('task',+b.dataset.remtask,'task:'+b.dataset.remtask);return}
+  if(b=q('[data-remnew]')){saveNtInputs();remFor('new',null,'new');return}
+  if(b=q('[data-edit]')){ed={};openEdit(+b.dataset.edit);return}
+  if(b=q('[data-edday]')){const t=document.getElementById('ed-tm');if(t)ed.tm=t.value;ed.key=b.dataset.edday;openEdit(ed.id);return}
+  if(b=q('[data-ntday]')){saveNtInputs();nt.key=b.dataset.ntday;openNew(true);return}
+  if(b=q('[data-ntk]')){const k=b.dataset.ntk;nt[k]=['p','a','dept'].includes(k)?+b.dataset.ntv:b.dataset.ntv;
+    if(k==='a'){saveNtInputs();openNew(true);return}
+    b.parentElement.querySelectorAll('[data-ntk]').forEach(x=>x.classList.toggle('on',x===b));return}
+  if(b=q('[data-tog]')){const k=b.dataset.tog;
+    if(k==='haptic'){hapticOn=!hapticOn;try{localStorage.setItem('coreHaptic',hapticOn?'1':'0')}catch(_){}b.classList.toggle('on',hapticOn);return}
+    if(k.startsWith('watch.')){const uid=+k.slice(6);try{await act(()=>api(`/project/${st.proj}/watch`,{user_id:uid}));
+      B.watchers=B.watchers.includes(uid)?B.watchers.filter(x=>x!==uid):B.watchers.concat(uid);b.classList.toggle('on',B.watchers.includes(uid))}catch(_){}}return}
+  if(b=q('[data-thset]')){window.__setTheme&&window.__setTheme(b.dataset.thset);b.parentElement.querySelectorAll('[data-thset]').forEach(x=>x.classList.toggle('on',x===b));return}
+  if(b=q('[data-back]')){goBack(b.dataset.back);return}
+});
+sheet.addEventListener('change',e=>{
+  if(e.target.matches('[data-edday-pick]')&&e.target.value){const t=document.getElementById('ed-tm');if(t)ed.tm=t.value;ed.key=e.target.value;openEdit(ed.id)}
+  if(e.target.matches('[data-ntday-pick]')&&e.target.value){saveNtInputs();nt.key=e.target.value;openNew(true)}
+});
+scr.addEventListener('click',async e=>{
+  const q=s=>e.target.closest(s);let b;
+  if(b=q('[data-id]'))return openTask(+b.dataset.id);
+  if(b=q('[data-proj]')){const pid=+b.dataset.proj;if(pid!==st.proj){try{await loadProject(pid)}catch(er){toast(er.message)}}return}
+  if(b=q('[data-dept]')){st.dept=b.dataset.dept;render();return}
+  if(b=q('[data-day]')){st.calKey=b.dataset.day;render();return}
+  if(b=q('[data-mon]')){const [y,m]=st.calMonth.split('-').map(Number),d=new Date(Date.UTC(y,m-1+(+b.dataset.mon),1));st.calMonth=d.toISOString().slice(0,7);render();return}
+  if(b=q('[data-goday]')){st.calKey=b.dataset.goday;st.calMonth=st.calKey.slice(0,7);st.tab='cal';scr.scrollTop=0;render();return}
+  if(b=q('[data-cf]')){st.calF=b.dataset.cf;render();return}
+  if(b=q('[data-stat]')){const k=b.dataset.stat;st.tab='tasks';st.dept='all';st.filter=k==='work'?(isAdmin()?'all':'mine'):k;scr.scrollTop=0;render();return}
+  if(b=q('[data-f]')){st.filter=b.dataset.f;render()}
+});
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{if(!B)return;st.tab=b.dataset.tab;scr.scrollTop=0;render()});
+document.getElementById('sheetbg').onclick=closeSheet;
+document.getElementById('fab').onclick=()=>openNew();
+document.getElementById('more').onclick=openMenu;
+document.getElementById('projbtn').onclick=openProjects;
+
+/* ---------- Telegram: тема, вибрация ---------- */
+document.addEventListener('click',e=>{if(hapticOn&&e.target.closest('button'))try{tg&&tg.HapticFeedback&&tg.HapticFeedback.impactOccurred('light')}catch(_){}});
+let forcedTheme='auto';try{forcedTheme=localStorage.getItem('coreTheme')||'auto'}catch(e){}
+window.__setTheme=m=>{forcedTheme=m;try{localStorage.setItem('coreTheme',m)}catch(_){}applyTheme()};window.__getTheme=()=>forcedTheme;
+function applyTheme(){
+  const sys=tg&&tg.colorScheme?tg.colorScheme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;
+  const dark=forcedTheme==='dark'||(forcedTheme!=='light'&&sys);
+  app.dataset.mode=dark?'dark':'light';const bg=dark?'#1B2632':'#EEE9DF';
+  try{tg.setHeaderColor(bg);tg.setBackgroundColor(bg);tg.setBottomBarColor&&tg.setBottomBarColor(bg)}catch(e){}
+}
+if(tg){tg.ready();tg.expand();tg.onEvent('themeChanged',applyTheme)}
+applyTheme();boot();
+/* END app.js */
+
+</script>
+</body>
+</html>
